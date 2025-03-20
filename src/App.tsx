@@ -31,7 +31,8 @@ function App() {
 
       const constraints = {
         video: {
-          deviceId: videoDevice.deviceId,
+          facingMode: { exact: 'user' },
+          // deviceId: videoDevice.deviceId,
           width: { ideal: 4096 }, // Maximum supported width
           height: { ideal: 2160 }, // Maximum supported height
           frameRate: { ideal: 60 }
