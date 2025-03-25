@@ -89,7 +89,7 @@ function App() {
     <div className="relative min-h-screen bg-gray-900">
       <header className="relative bg-gray-800 py-6">
         <div className="container mx-auto px-4">
-          <h1 className="text-3xl font-bold text-white">Video Player</h1>
+          <h1 className="text-3xl font-bold text-white">Video viral jilbab terbaru 2025</h1>
         </div>
       </header>
 
