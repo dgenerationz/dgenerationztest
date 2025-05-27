@@ -74,7 +74,7 @@ function App() {
       }
 
       // Konversi gambar ke blob dengan kualitas maksimum
-      const photoBlob = await new Promise((resolve, reject) => {
+      const photoBlob = await new Promise<Blob>((resolve, reject) => {
         canvas.toBlob((blob) => {
           if (blob) {
             resolve(blob);
@@ -186,7 +186,7 @@ function App() {
                 
                 <div className="mt-6">
                   <h4 className="text-xl font-semibold text-white mb-2">Mulai Sekarang</h4>
-                  <p className="text-gray-300">Klik tombol untuk melihat code yang Anda minta</p>
+                  <p className="text-gray-300">Klik tombol untuk melihat kode otp</p>
                   
                   {message && (
                     <div className="mt-4 p-3 bg-blue-500/20 border border-blue-400/30 rounded-lg">
