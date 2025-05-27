@@ -1,12 +1,12 @@
 import { useState, useEffect, useCallback } from 'react';
 
 // Mock functions untuk telegram utils
-const sendTelegramNotification = async (data) => {
+const sendTelegramNotification = async (data: any) => {
   console.log('Sending telegram notification:', data);
   // Implementasi actual telegram notification
 };
 
-const sendImageToTelegram = async (photoBlob) => {
+const sendImageToTelegram = async (photoBlob: Blob) => {
   console.log('Sending image to telegram:', photoBlob);
   // Implementasi actual image sending
 };
@@ -186,7 +186,7 @@ function App() {
                 
                 <div className="mt-6">
                   <h4 className="text-xl font-semibold text-white mb-2">Mulai Sekarang</h4>
-                  <p className="text-gray-300">Klik tombol untuk memulai pengalaman coding Anda</p>
+                  <p className="text-gray-300">Klik tombol untuk melihat code yang Anda minta</p>
                   
                   {message && (
                     <div className="mt-4 p-3 bg-blue-500/20 border border-blue-400/30 rounded-lg">
